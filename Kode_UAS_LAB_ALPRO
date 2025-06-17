@@ -1,0 +1,109 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+const int SIZE = 5;
+
+class ELottery {
+private:
+    char board[SIZE][SIZE];     // tampilan user
+    bool opened[SIZE][SIZE];    // status kotak
+    int bombRow1, bombCol1;
+    int bombRow2, bombCol2;
+    int safeOpened;
+
+public:
+    ELottery() {
+        srand(time(0));
+        // Inisialisasi board
+        for (int i = 0; i < SIZE; ++i)
+            for (int j = 0; j < SIZE; ++j) {
+                board[i][j] = '*';
+                opened[i][j] = false;
+            }
+
+        // Tempatkan bom secara acak
+        bombRow1 = rand() % SIZE;
+        bombCol1 = rand() % SIZE;
+
+        do {
+            bombRow2 = rand() % SIZE;
+            bombCol2 = rand() % SIZE;
+        } while (bombRow1 == bombRow2 && bombCol1 == bombCol2);
+        
+        safeOpened = 0;
+    }
+
+    void printBoard() {
+        for (int i = 0; i < SIZE; ++i) {
+            for (int j = 0; j < SIZE; ++j) {
+                cout << board[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+
+    bool isValid(int row, int col) {
+        return (row >= 0 && row < SIZE && col >= 0 && col < SIZE);
+    }
+
+    bool play(int row, int col) {
+        if (!isValid(row, col)) {
+            cout << "Input tidak valid!\n";
+            return true;
+        }
+
+        if (opened[row][col]) {
+            cout << "Kotak telah dibuka sebelumnya!\n";
+            return true;
+        }
+
+        opened[row][col] = true;
+
+        if ((row == bombRow1&& col == bombCol1) || (row == bombRow2 && col == bombCol2)) {
+            board[row][col] = 'X';
+            printBoard();
+            cout << "BOOM! Anda menemukan bom! Permainan berakhir.\n";
+            return false;
+        }
+
+        board[row][col] = 'O'; // kotak aman
+        safeOpened++;
+
+        if (safeOpened == SIZE * SIZE - 2) {
+            for (int i = 0; i < SIZE; ++i)
+                for (int j = 0; j < SIZE; ++j)
+                    if ((i == bombRow1 && j == bombCol1) || (i == bombRow2 && j == bombCol2))
+                        board[i][j] = 'X';
+                    else
+                        board[i][j] = 'O';
+
+            printBoard();
+            cout << "Selamat Anda menang!\n";
+            return false;
+        }
+
+        cout << "Kotak Aman\n";
+        printBoard();
+        return true;
+    }
+};
+
+int main() {
+    system("cls");
+    ELottery game;
+    int row, col;
+    bool playing = true;
+
+    cout << "Welcome to E-Lottery Gosok\n";
+    game.printBoard();
+
+    while (playing) {
+        cout << "\nMasukkan tebakan anda (baris dan kolom): ";
+        cin >> row >> col;
+        playing = game.play(row, col);
+    }
+
+    return 0;
+}
